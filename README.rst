@@ -1,7 +1,7 @@
 puttykeys
 =========
 
-A module to convert SSH keys from the Putty format to the OpenSSH format.
+A module to convert SSH keys from the Putty format to the OpenSSH format. Supports RSA and ED25519 keys.
 Implements one method, ``ppkraw_to_openssh(ppk_text_contents[, password])`` which decodes the supplied putty key if a password is provided, converts to OpenSSH format and returns it as a string.
 The returned output string is not encrypted or password protected.
 
