@@ -49,11 +49,11 @@ def ppkraw_to_openssh(ppkraw, passphrase = ''):
       macbody = b''.join(struct.pack('>I', len(s)) + s for s in [keytype, cipherstr, comment, pubbin, privbin])
       if hmac.HMAC(hashlib.sha1(mackey).digest(),macbody,hashlib.sha1).hexdigest() != hexmac:
         raise ValueError('HMAC mismatch (bad passphrase?)')
+    privio = get_binio(privbin)
     if keytype == b'ssh-rsa':
       pubexp = pubio.read(struct.unpack('>I', pubio.read(4))[0])
       modulus = pubio.read(struct.unpack('>I', pubio.read(4))[0])
       #priv decode
-      privio = get_binio(privbin)
       privexp = privio.read(struct.unpack('>I', privio.read(4))[0])
       p = privio.read(struct.unpack('>I', privio.read(4))[0])
       q = privio.read(struct.unpack('>I', privio.read(4))[0])
@@ -70,6 +70,15 @@ def ppkraw_to_openssh(ppkraw, passphrase = ''):
       complete = b"\x30\x82" + struct.pack('>H', len(sequence)) + sequence
       completeb64 = base64.b64encode(complete).decode()
       return "-----BEGIN RSA PRIVATE KEY-----\n" + "\n".join(completeb64[0+i:64+i] for i in range(0, len(completeb64), 64)) + "\n-----END RSA PRIVATE KEY-----\n"
+    elif keytype == b'ssh-ed25519':
+      pubval = pubio.read(struct.unpack('>I', pubio.read(4))[0])
+      prival = privio.read(struct.unpack('>I', privio.read(4))[0])
+      pubopenssh = struct.pack('>I', len(keytype)) + keytype + struct.pack('>I', len(pubval)) + pubval
+      lastpart = struct.pack('>II', 1, 1) + pubopenssh + struct.pack('>I', len(prival) + len(pubval)) + prival + pubval + struct.pack('>I', len(comment)) + comment
+      lastpart = lastpart + b"\x01\x02\x03\x04\x05\x06\x07"[0:8-(len(lastpart) % 8)]
+      complete = b"openssh-key-v1\x00\x00\x00\x00\x04none\x00\x00\x00\x04none" + struct.pack('>III', 0, 1, len(pubopenssh)) + pubopenssh + struct.pack('>I', len(lastpart)) + lastpart
+      completeb64 = base64.b64encode(complete).decode()
+      return "-----BEGIN OPENSSH PRIVATE KEY-----\n" + "\n".join(completeb64[0+i:70+i] for i in range(0, len(completeb64), 70)) + "\n-----END OPENSSH PRIVATE KEY-----\n"
 
 def main():
   """Command line conversion of a PPK file to an OpenSSH file
