@@ -13,9 +13,9 @@ def get_binio(bytes):
 def ppkraw_to_openssh(ppkraw, passphrase = ''):
   lines = [l.strip() for l in ppkraw.strip().split('\n')]
   if lines[0].startswith('PuTTY-User-Key-File-2:'):
-    privbin = ''
-    pubbin = ''
-    comment = ''
+    privbin = b''
+    pubbin = b''
+    comment = b''
     hexmac = False
     for i in range(0,len(lines)):
       if lines[i].startswith('Public-Lines: '):
