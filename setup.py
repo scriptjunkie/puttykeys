@@ -3,7 +3,7 @@ import os
 
 setup(
     name='puttykeys',
-    version='1.0.2',
+    version='1.0.3',
     description='Library to convert Putty private keys to OpenSSH format',
     author='Matt Weeks',
     author_email='scriptjunkie@scriptjunkie.us',
